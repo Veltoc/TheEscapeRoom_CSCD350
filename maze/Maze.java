@@ -50,7 +50,10 @@ public class Maze
     {
         return isPathBetween(getRoom(originX, originY), getFinish());
     }
-
+    public boolean isPathToFinish(Room current)
+    {
+        return isPathBetween(current, getFinish());
+    }
     public Room getRoom(int x, int y)
     {
         return this.rooms[y][x];
