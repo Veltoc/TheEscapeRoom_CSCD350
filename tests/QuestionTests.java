@@ -1,18 +1,17 @@
 package tests;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 import maze.MultipleChoice;
-import maze.Question;
 import maze.ShortAnswer;
 import maze.TrueFalse;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
-
-class QuestionTests {
+public class QuestionsTestJUnit {
 
 	@Test
-	void test_TrueFalse() 
+	public void test_TrueFalse() 
 	{
 		TrueFalse tf = new TrueFalse("Is true true", "true");
 		assertTrue(tf.check("t"));
@@ -20,7 +19,7 @@ class QuestionTests {
 	
 	
 	@Test
-	void test_MultipleChoice() 
+	public void test_MultipleChoice() 
 	{
 		MultipleChoice mc = new MultipleChoice("Which is Correct", "correct", "incorrect", "incorrect", "incorrect");
 		
@@ -31,10 +30,9 @@ class QuestionTests {
 	}
 	
 	@Test
-	void test_ShortAnswer() 
+	public void test_ShortAnswer() 
 	{
 		ShortAnswer sa = new ShortAnswer("What is the color of the sky", "blue");
 		assertTrue(sa.check("blue"));
 	}
-
 }
