@@ -22,38 +22,19 @@ public class Maze
     @Override
     public String toString()
     {
-        StringBuilder str = new StringBuilder(this.width * 4 * this.height * 4);
-        StringBuilder row1 = new StringBuilder(this.width * 4);
-        StringBuilder row2 = new StringBuilder(this.width * 4);
-        StringBuilder row3 = new StringBuilder(this.width * 4);
-        String[] roomDisp;
-
-        for (int y = 0; y < this.height; y++) {
-            row1.delete(0, row1.length());
-            row2.delete(0, row2.length());
-            row3.delete(0, row3.length());
-
-            for (int x = 0; x < this.width; x++) {
-                roomDisp = this.rooms[y][x].getDisplay();
-                row1.append(roomDisp[0]);
-                row2.append(roomDisp[1]);
-                row3.append(roomDisp[2]);
-            }
-
-            str.append(row1.toString() + "\n" + row2.toString() + "\n" + row3.toString() + "\n");
-        }
-
-        return str.toString();
+        return getDisplay(null);
     }
 
     public boolean isPathToFinish(int originX, int originY)
     {
         return isPathBetween(getRoom(originX, originY), getFinish());
     }
+
     public boolean isPathToFinish(Room current)
     {
         return isPathBetween(current, getFinish());
     }
+
     public Room getRoom(int x, int y)
     {
         return this.rooms[y][x];
@@ -67,6 +48,32 @@ public class Maze
     public Room getFinish()
     {
         return this.finish;
+    }
+
+    public String getDisplay(Room currentRoom)
+    {
+        StringBuilder str = new StringBuilder(this.width * 4 * this.height * 4);
+        StringBuilder row1 = new StringBuilder(this.width * 4);
+        StringBuilder row2 = new StringBuilder(this.width * 4);
+        StringBuilder row3 = new StringBuilder(this.width * 4);
+        String[] roomDisp;
+
+        for (int y = 0; y < this.height; y++) {
+            row1.delete(0, row1.length());
+            row2.delete(0, row2.length());
+            row3.delete(0, row3.length());
+
+            for (int x = 0; x < this.width; x++) {
+                roomDisp = this.rooms[y][x].getDisplay(this.rooms[y][x] == currentRoom);
+                row1.append(roomDisp[0]);
+                row2.append(roomDisp[1]);
+                row3.append(roomDisp[2]);
+            }
+
+            str.append(row1.toString() + "\n" + row2.toString() + "\n" + row3.toString() + "\n");
+        }
+
+        return str.toString();
     }
 
     private void initMaze()

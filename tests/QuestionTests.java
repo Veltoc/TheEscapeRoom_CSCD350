@@ -1,6 +1,7 @@
 package tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -8,31 +9,46 @@ import maze.MultipleChoice;
 import maze.ShortAnswer;
 import maze.TrueFalse;
 
-public class QuestionsTestJUnit {
+public class QuestionTests {
 
 	@Test
 	public void test_TrueFalse() 
 	{
-		TrueFalse tf = new TrueFalse("Is true true", "true");
-		assertTrue(tf.check("t"));
+		TrueFalse question = new TrueFalse("Is true true", true);
+
+		assertTrue(question.check("t"));
+		assertTrue(question.check("true"));
+		assertFalse(question.check("f"));
+		assertFalse(question.check("false"));
+		assertFalse(question.check("jibberish"));
+
+		int ansIndex = question.getOptionArray().indexOf(question.getAnswer()) + 1;
+		assertTrue(question.check(Integer.toString(ansIndex)));
 	}
-	
 	
 	@Test
 	public void test_MultipleChoice() 
 	{
-		MultipleChoice mc = new MultipleChoice("Which is Correct", "correct", "incorrect", "incorrect", "incorrect");
-		
-		//Because we shuffle the order of possible choices we have to getCorrectIndex() in order to consistently 
-		//get the correct answer location. We can't use a concrete number because the correct answer is shuffled
-		assertTrue(mc.check(Integer.toString(mc.getCorrectIndex())));
-		
+		MultipleChoice question = new MultipleChoice("Which is Correct", "Correct", "Incorrect", "INCORRECT");
+
+		assertTrue(question.check("correct"));
+		assertFalse(question.check("jibberish"));
+
+		int ansIndex = question.getOptionArray().indexOf(question.getAnswer()) + 1;
+		assertTrue(question.check(Integer.toString(ansIndex)));
 	}
 	
 	@Test
 	public void test_ShortAnswer() 
 	{
-		ShortAnswer sa = new ShortAnswer("What is the color of the sky", "blue");
-		assertTrue(sa.check("blue"));
+		ShortAnswer question = new ShortAnswer("What is the color of the sky", "light blue");
+
+		assertTrue(question.check("light blue"));
+		assertTrue(question.check("blue light"));
+		assertFalse(question.check("light jibberish"));
+		assertFalse(question.check("blue jibberish"));
+		assertFalse(question.check("jibberish light"));
+		assertFalse(question.check("jibberish blue"));
+		assertFalse(question.check("jibberish jibberish"));
 	}
 }

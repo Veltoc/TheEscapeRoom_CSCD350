@@ -5,19 +5,29 @@ import java.util.List;
 
 public class ShortAnswer extends Question
 {
-    public ShortAnswer(String question,String correct)
+    public ShortAnswer(String question, String answer)
     {
-        super(question,1);
-        this.options[0] = correct;//correct index is 0 by default
+        super(question, answer);
     }
+
+
     @Override
-    public boolean check(String input)
+    public String toString()
     {
-        List<String> userInput = Arrays.asList(input.toLowerCase().split(" "));
-        String[] solution = options[0].toLowerCase().split(" ");
-        for (String sol : solution) {//look into containsAll?
-            if(!userInput.contains(sol)) return false;
+        return getQuestion();
+    }
+
+    @Override
+    public boolean check(String guess)
+    {
+        List<String> guessTokens = Arrays.asList(guess.toLowerCase().split(" "));
+        List<String> answerTokens = Arrays.asList(getAnswer().toLowerCase().split(" "));
+
+        // Checking if all tokens exist and no more
+        if (guessTokens.containsAll(answerTokens) && guessTokens.size() == answerTokens.size()) {
+            return true;
+        } else {
+            return false;
         }
-    return true;
     }
 }
