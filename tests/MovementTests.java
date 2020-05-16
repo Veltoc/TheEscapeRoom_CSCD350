@@ -20,7 +20,7 @@ public class MovementTests
         System.setIn(fakeIn);
         Main.main(null);
 
-        assertNotEquals(Main.getCurrentRoom(), Main.getMaze().getStart());
+        assertEquals(Main.getMaze().getRoom(1, 0), Main.getCurrentRoom());
     }
 
     @Test
@@ -31,7 +31,7 @@ public class MovementTests
         Main.main(null);
 
         // Confirming still at start
-        assertEquals(Main.getCurrentRoom(),Main.getMaze().getStart());
+        assertEquals(Main.getCurrentRoom(), Main.getMaze().getStart());
     }
 
     @Test
@@ -42,7 +42,7 @@ public class MovementTests
         Main.main(null);
 
         // Confirming still at start
-        assertEquals(Main.getCurrentRoom(),Main.getMaze().getStart());
+        assertEquals(Main.getCurrentRoom(), Main.getMaze().getStart());
     }
 
     @Test

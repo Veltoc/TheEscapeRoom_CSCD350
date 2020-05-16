@@ -1,9 +1,13 @@
 package maze;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Room
+implements Serializable
 {
+    private static final long serialVersionUID = -7819848474590916374L;
+
     public enum Direction {
         UP(0), RIGHT(1), DOWN(2), LEFT(3);
         int index;

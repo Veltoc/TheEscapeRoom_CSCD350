@@ -1,5 +1,9 @@
 package maze;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -87,6 +91,47 @@ public class Main
                 } else if (in.startsWith("q")) { //quit
                     return true;
 
+                } else if (in.startsWith("save")) {
+                    String filename = getFilename("save", in);
+                    if (filename == null) {
+                        System.out.println("Please enter a file name.");
+                        continue;
+                    }
+
+                    try {
+                        FileOutputStream file = new FileOutputStream(filename);
+                        ObjectOutputStream out = new ObjectOutputStream(file);
+
+                        out.writeObject(maze);
+                        out.writeObject(currentRoom);
+
+                        file.close();
+                        out.close();
+                    } catch (Exception e) {
+                        System.out.println("Unable to save...");
+                        continue;
+                    }
+                } else if (in.startsWith("load")) {
+                    String filename = getFilename("save", in);
+                    if (filename == null) {
+                        System.out.println("Please enter a file name.");
+                        continue;
+                    }
+
+                    try {
+                        FileInputStream file = new FileInputStream(filename);
+                        ObjectInputStream inFile = new ObjectInputStream(file);
+
+                        maze = (Maze) inFile.readObject();
+                        currentRoom = (Room) inFile.readObject();
+
+                        file.close();
+                        inFile.close();
+                    } catch (Exception e) {
+                        System.out.println("Unable to load...");
+                        continue;
+                }
+
                 // Directions
                 } else if (in.startsWith("n") || in.equals("up")) {
                     moveToRoom(Direction.UP);
@@ -151,6 +196,8 @@ public class Main
             + "south, down: move to the south room.\n"
             + "west, left: move to the west room.\n"
             + "east, right: move to the east room.\n"
+            + "save <name>: saves the current game.\n"
+            + "load <name>: loads the specified game.\n"
             + "\nFor most commands, you can enter the first character instead."
         );
     }
@@ -203,6 +250,14 @@ public class Main
             System.out.println("\n\n\nIncorrect! The door is now locked.");
             return false;
         }
+    }
+
+    private static String getFilename(String prefix, String input)
+    {
+        if (input.length() > prefix.length() + 1) { // prefix and a space
+            return input.substring(prefix.length() + 1) + ".sav";
+        }
+        return null;
     }
 
     //below methods are to allow for access for testing
