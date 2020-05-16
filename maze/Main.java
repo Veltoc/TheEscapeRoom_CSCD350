@@ -16,6 +16,7 @@ public class Main
     private static boolean win = false;
     private static boolean running = true;
     private static boolean doRemove = false;
+    private static final String PASSWORD = "p@ssword";
     public static void main(String[] args)
     {
         while(running)
@@ -28,7 +29,7 @@ public class Main
             questions.add(new MultipleChoice("take a guess", "Yup", "Wrong", "Wrong", "Wrong"));
             questions.add(new ShortAnswer("George Bush", "George Bush"));
             do
-                {
+            {
                 System.out.println("Enter a command: up, down, left, right, or q to quit");
                 in = keyboard.nextLine().toLowerCase();
                 //System.out.println("in: "+in); //for testing
@@ -87,6 +88,12 @@ public class Main
             }
             else System.out.println("Room locked");
                 break;
+            case "/finishcheat": System.out.println("Password?");
+                if(keyboard.nextLine().equals(PASSWORD)) {
+                    System.out.println("Password accepted, moving to finish.");
+                    currentRoom = maze.getFinish();
+                }
+                break;
             default: System.out.println("Please enter a valid direction");
                 break;
         }
@@ -113,7 +120,7 @@ public class Main
             System.out.print("Short answer: ");
         }
         else
-            {
+        {
             int number = 1;
             for (String option : options)
             {
@@ -122,8 +129,15 @@ public class Main
             }
         }
         String query = keyboard.nextLine();
-        if(query.equals("AdminPass")) return true;//needs a better code..
-        else if(query.equals("AdminFail")) return false;//needs a better code..
+        if(query.equals("/unlock")) {
+            System.out.println("Password?");
+            if(keyboard.nextLine().equals(PASSWORD)){
+                System.out.println("Password accepted, unlocking door");
+                return true;
+            }
+            return false;
+        }
+        else if(query.equals("/AdminFail")) return false;//her for tests to fail
         else if(currentQuestion.check(query))//I do error prevention in the Question of if its multiple choice or T/F and not a number but the question will return false. Consider earlier checking
         {
             System.out.println("Correct!");
