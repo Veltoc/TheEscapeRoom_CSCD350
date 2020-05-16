@@ -6,7 +6,6 @@ public class Room
 {
     public enum Direction {
         UP(0), RIGHT(1), DOWN(2), LEFT(3);
-
         int index;
 
         Direction(int index)
@@ -44,7 +43,7 @@ public class Room
     @Override
     public String toString()
     {
-        String[] rows = getDisplay();
+        String[] rows = getDisplay(false);
         return rows[0] + "\n" + rows[1] + "\n" + rows[2];
     }
 
@@ -66,17 +65,27 @@ public class Room
         this.connections[dir.getIndex()].openConnections[dir.getOppositeIndex()] = false;
     }
 
+    public void openDoor(Direction dir)
+    {
+        // Closing this door
+        this.openConnections[dir.getIndex()] = true;
+
+        // Closing other door
+        this.connections[dir.getIndex()].openConnections[dir.getOppositeIndex()] = true;
+    }
+
     public Room getRoomIn(Direction dir)
     {
         return connections[dir.getIndex()];
     }
 
-    public String[] getDisplay()
+    public String[] getDisplay(boolean isCurrentRoom)
     {
         String[] str = {
             String.format("*%s*", this.openConnections[Direction.UP.getIndex()] ? "  " : "--"),
-            String.format("%s  %s",
+            String.format("%s%s %s",
                     this.openConnections[Direction.LEFT.getIndex()] ? " " : "|",
+                    isCurrentRoom ? "X" : " ",
                     this.openConnections[Direction.RIGHT.getIndex()] ? " " : "|"),
             String.format("*%s*", this.openConnections[Direction.DOWN.getIndex()] ? "  " : "--")
         };

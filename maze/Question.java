@@ -1,49 +1,51 @@
 package maze;
 
-public abstract class Question {
-    String question;
-    String[] options;
-    int correctIndex;
-    public Question()
-    {
-        this(" ",0);
-    }
-    public Question(String question, int size)
+import java.util.ArrayList;
+
+public abstract class Question
+{
+    private String question;
+    private String answer;
+    private ArrayList<String> options;
+
+
+    public Question(String question, String answer, String... incorrectOptions)
     {
         this.question = question;
-        this.options = new String[size];
-        this.correctIndex = 0;
-    }
-    
-    //Method structure was if if-else therefore if answer was zero it would auto run the else in truefalse questions.
-    //Changed to if-elseif-else. Also removed the try catch because the Integer.parseInt(input) throws that exception everytime 
-    //regardless of whether the input is correct or not.
-    public boolean check(String input)
-    {
-        int val = 0;
-        if(input.equalsIgnoreCase("T")) val = 0;
-        else if(input.equalsIgnoreCase("F")) val = 1;
-        else {
-        	val = Integer.parseInt(input);
-            //Based on how we layout the questions either 1-4 we will have to use val-- or 0-3 (we don't)
-        	//val--;
+        this.answer = answer;
+
+        this.options = new ArrayList<String>(incorrectOptions.length + 1);
+        this.options.add(answer);
+        for (String option: incorrectOptions) {
+            this.options.add(option);
         }
-
-        return val==correctIndex;
     }
 
-    public int getCorrectIndex()
-    {
-        return correctIndex;
-    }
+
+    @Override
+    public abstract String toString(); // Forces children to implement method
+    public abstract boolean check(String guess);
 
     public String getQuestion()
     {
-        return question;
+        return this.question;
     }
 
     public String[] getOptions()
     {
-        return options;
+        // Creating the String array tells the ArrayList to create a String array of that size
+        // Not including the argument creates an Object array
+        return this.options.toArray(new String[this.options.size()]);
+    }
+
+    public String getAnswer()
+    {
+        return this.answer;
+    }
+
+    // Public for unit testing purposes; would otherwise be protected
+    public ArrayList<String> getOptionArray()
+    {
+        return this.options;
     }
 }
