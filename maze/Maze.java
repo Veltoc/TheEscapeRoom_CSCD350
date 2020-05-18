@@ -1,10 +1,14 @@
 package maze;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 public class Maze
+implements Serializable
 {
+    private static final long serialVersionUID = 1917404425459845405L;
+
     private int width;
     private int height;
     private Room[][] rooms;
