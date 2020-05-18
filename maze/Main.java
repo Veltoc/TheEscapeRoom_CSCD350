@@ -22,6 +22,7 @@ public class Main
     private static Maze maze;
     private static Room currentRoom;
     private static ArrayList<Question> questions;
+    private static Connection conn = null;
 
 
     public static void main(String[] args)
@@ -32,7 +33,9 @@ public class Main
 
         while(true) {
             initGame(WIDTH, HEIGHT);
-
+            connectDatabase();
+            getDBQuestions();
+            
             quit = playGame();
             if (quit) {
                 break;
@@ -47,6 +50,150 @@ public class Main
         }
 
         keyboard.close();
+        conn.close();
+    }
+    
+    public static void connectDatabase() throws Exception{
+
+    	try {
+    		Class.forName("org.sqlite.JDBC");
+    		conn = DriverManager.getConnection("jdbc:sqlite:SqliteDBQuestions.db");
+    		System.out.println("SQLite DB connected");
+    				
+    	} catch(Exception e) {
+    		System.out.println(e);
+    	}
+    }
+    
+    public static void getDBQuestions() 
+    {
+    	
+    	questions = new ArrayList<Question>();
+    	PreparedStatement ps = null;
+    	String sql = "";
+    	ResultSet rs = null;
+    	
+    	try {
+    		sql = "SELECT * FROM tbl_TrueFalse";
+    		ps = conn.prepareStatement(sql);
+    		rs = ps.executeQuery();
+    		
+    		while(rs.next()) {
+    			String question = rs.getString("Question");
+    			String answer = rs.getString("Answer");
+    			answer.toLowerCase();
+    			questions.add(new TrueFalse(question, Boolean.parseBoolean(answer)));
+    			
+    		}
+    		
+    		ps.close();
+    		rs.close();
+    		
+    		sql = "SELECT * FROM tbl_MultipleChoice";
+    		ps = conn.prepareStatement(sql);
+    		rs = ps.executeQuery();
+    		
+    		while(rs.next()) {
+    			String question = rs.getString("Question");
+    			String answer = rs.getString("Answer");
+    			String[] incorrectQs = {rs.getString("Incorrect1"), rs.getString("Incorrect2"), rs.getString("Incorrect3")};
+    			questions.add(new MultipleChoice(question, answer, incorrectQs));
+    			
+    		}
+    		
+    		ps.close();
+    		rs.close();
+    		
+    		sql = "SELECT * FROM tbl_ShortAnswer";
+    		ps = conn.prepareStatement(sql);
+    		rs = ps.executeQuery();
+    		
+    		while(rs.next()) {
+    			String question = rs.getString("Question");
+    			String answer = rs.getString("Answer");
+    			questions.add(new ShortAnswer(question, answer));
+    			
+    		}
+    		
+    	}catch(SQLException e) {
+    		System.out.println(e.toString());
+    	} finally {
+    		try {
+    			rs.close();
+    			ps.close();
+    		} catch(SQLException e) {
+    			System.out.println(e.toString());
+    		}
+    	}
+    	
+    	Collections.shuffle(questions, rnd);
+    	
+    }
+    
+    public static void insertTFQuestion(String question, String answer) 
+    {
+    	
+    	PreparedStatement ps = null;
+    	String sql = "";
+    	
+    	try {
+    		sql = "INSERT INTO tbl_TrueFalse(Question, Answer) VALUES(?,?)";
+    		ps = conn.prepareStatement(sql);
+    		ps.setString(1, question);
+    		ps.setString(2, answer);
+    		ps.execute();
+    		ps.close();
+    		questions.add(new TrueFalse(question, Boolean.parseBoolean(answer)));
+    		Collections.shuffle(questions, rnd);
+    		System.out.println("TF has been inserted!");
+    	}catch(Exception e) {
+    		System.out.println(e);
+    	}
+    	
+    }
+    
+    public static void insertMCQuestion(String question, String answer, String[] incorrectOptions) 
+    {
+    	
+    	PreparedStatement ps = null;
+    	String sql = "";
+    	
+    	try {
+    		sql = "INSERT INTO tbl_MultipleChoice(Question, Answer, Incorrect1, Incorrect2, Incorrect3) VALUES(?,?,?,?,?)";
+    		ps = conn.prepareStatement(sql);
+    		ps.setString(1, question);
+    		ps.setString(2, answer);
+    		ps.setString(3, incorrectOptions[0]);
+    		ps.setString(4, incorrectOptions[1]);
+    		ps.setString(5, incorrectOptions[2]);
+    		ps.execute();
+    		ps.close();
+    		questions.add(new MultipleChoice(question, answer, incorrectOptions));
+    		Collections.shuffle(questions, rnd);
+    		System.out.println("MC has been inserted!");
+    	}catch(Exception e) {
+    		System.out.println(e);
+    	}
+    }
+    
+    public static void insertSAQuestion(String question, String answer) 
+    {
+    	PreparedStatement ps = null;
+    	String sql = "";
+    	
+    	try {
+    		sql = "INSERT INTO tbl_ShortAnswer(Question, Answer) VALUES(?,?)";
+    		ps = conn.prepareStatement(sql);
+    		ps.setString(1, question);
+    		ps.setString(2, answer);
+    		ps.execute();
+    		ps.close();
+    		questions.add(new ShortAnswer(question, answer));
+    		Collections.shuffle(questions, rnd);
+    		System.out.println("SA has been inserted!");
+    	}catch(Exception e) {
+    		System.out.println(e);
+    	}
     }
 
     private static void initGame(int mazeWidth, int mazeHeight)
@@ -54,10 +201,10 @@ public class Main
         maze = new Maze(mazeWidth, mazeHeight);
         currentRoom = maze.getStart();
 
-        initQuestions();
+        //initQuestions();
     }
 
-    private static void initQuestions()
+    /*private static void initQuestions()
     {
         questions = new ArrayList<Question>();
 
@@ -66,7 +213,7 @@ public class Main
         questions.add(new ShortAnswer("George Bush", "George Bush"));
 
         Collections.shuffle(questions, rnd);
-    }
+    }*/
 
     private static boolean playGame()
     {
@@ -90,8 +237,34 @@ public class Main
                     continue;
                 } else if (in.startsWith("q")) { //quit
                     return true;
-
-                } else if (in.startsWith("save")) {
+                } else if(in.equals("add question")) {
+                	printAddQuestionCommands();
+                	continue;
+                } else if(in.equals("1")) {
+                	System.out.println("Enter the question:");
+                	question = keyboard.nextLine();
+                	System.out.println("Is it true or false?");
+                	answer = keyboard.nextLine();
+                	insertTFQuestion(question, answer);	
+                } else if(in.equals("2")) {
+                	System.out.println("Enter the question:");
+                	question = keyboard.nextLine();
+                	System.out.println("Enter the correct answer:");
+                	answer = keyboard.nextLine();
+                	System.out.println("Enter incorrect answer one:");
+                	incorrect1 = keyboard.nextLine();
+                	System.out.println("Enter incorrect answer two:");
+                	incorrect2 = keyboard.nextLine();
+                	System.out.println("Enter incorrect answer three:");
+                	incorrect3 = keyboard.nextLine();
+                	insertMCQuestion(question, answer, new String[]{incorrect1, incorrect2, incorrect3});	
+                } else if(in.equals("3")) {
+                	System.out.println("Enter the question:");
+                	question = keyboard.nextLine();
+                	System.out.println("Enter the correct answer:");
+                	answer = keyboard.nextLine();
+                	insertSAQuestion(question,answer);
+                }else if (in.startsWith("save")) {
                     String filename = getFilename("save", in);
                     if (filename == null) {
                         System.out.println("Please enter a file name.");
@@ -211,6 +384,16 @@ public class Main
             + "unlock <dir>: unlock the door in the specified direction.\n"
             + "escape: teleport to the finish.\n"
         );
+    }
+
+    private static void printAddQuestionCommands() 
+    {
+    	System.out.println(
+                "Enter the corresponding number to the Question you wish to add\n"
+                + "1. True/False Question\n" // Implemented in askQuestion
+                + "2. Multiple Choice Question\n" // Implemented in askQuestion
+                + "3. Short Answer Question\n"
+            );
     }
 
     private static void moveToRoom(Direction dir)
