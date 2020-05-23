@@ -1,7 +1,7 @@
 package tests;
 
 import maze.Main;
-import org.junit.Before;
+
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -16,39 +16,60 @@ public class MovementTests
     @Test
     public void test_MoveRooms()
     {
-        InputStream fakeIn = new ByteArrayInputStream("right\n/unlock\np@ssword\nq".getBytes());
+        InputStream fakeIn = new ByteArrayInputStream("right\n/answer\nq".getBytes());
         System.setIn(fakeIn);
         Main.main(null);
-        assertNotEquals(Main.getCurrentRoom(), Main.getMaze().getStart());
+
+        assertEquals(Main.getMaze().getRoom(1, 0), Main.getCurrentRoom());
     }
+
     @Test
     public void test_MoveOutOfMaze()
     {
-        InputStream fakeIn = new ByteArrayInputStream("up\nleft\nq".getBytes());
+        InputStream fakeIn = new ByteArrayInputStream("up\n/answer\nleft\n/answer\nq".getBytes());
         System.setIn(fakeIn);
         Main.main(null);
+
         // Confirming still at start
-        assertEquals(Main.getCurrentRoom(),Main.getMaze().getStart());
+        assertEquals(Main.getCurrentRoom(), Main.getMaze().getStart());
     }
+
     @Test
     public void test_RoomLockedOnFail()
     {
-        InputStream fakeIn = new ByteArrayInputStream("down\n/AdminFail\ndown\nq".getBytes());
+        InputStream fakeIn = new ByteArrayInputStream("down\n/fail\ndown\n/answer\nq".getBytes());
         System.setIn(fakeIn);
         Main.main(null);
+
         // Confirming still at start
-        assertEquals(Main.getCurrentRoom(),Main.getMaze().getStart());
+        assertEquals(Main.getCurrentRoom(), Main.getMaze().getStart());
     }
+
     @Test
     public void test_LoseState()
     {
-        InputStream fakeIn = new ByteArrayInputStream("down\n/AdminFail\nright\n/AdminFail\nn".getBytes());
+        InputStream fakeIn = new ByteArrayInputStream("down\n/fail\nright\n/fail\nn".getBytes());
         System.setIn(fakeIn);
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
         Main.main(null);
-        // Confirming still at start
+
+        // Confirming output
         System.out.println(outContent.toString());
-        assertTrue(outContent.toString().contains("There is no escape, do you want to try again? (y/n)"));
+        assertTrue(outContent.toString().contains("There is no escape..."));
+    }
+
+    @Test
+    public void test_WinState()
+    {
+        InputStream fakeIn = new ByteArrayInputStream("right\n/answer\nright\n/answer\nright\n/answer\ndown\n/answer\ndown\n/answer\ndown\n/answer\nn".getBytes());
+        System.setIn(fakeIn);
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+        Main.main(null);
+
+        // Confirming output
+        System.out.println(outContent.toString());
+        assertTrue(outContent.toString().contains("You escaped! Congratulations!"));
     }
 }

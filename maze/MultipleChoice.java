@@ -1,28 +1,48 @@
 package maze;
 
-import java.util.Random;
+import java.util.Collections;
 
-public class MultipleChoice extends Question {
-    public MultipleChoice(String question,String correct,String incorrect1,String incorrect2,String incorrect3)
+public class MultipleChoice extends Question
+{
+    public MultipleChoice(String question, String answer, String... incorrectOptions)
     {
-        super(question,4);
-        this.options[0] = correct;//correct index is 0 by default
-        this.options[1] = incorrect1;
-        this.options[2] = incorrect2;
-        this.options[3] = incorrect3;
-        shuffle();
+        super(question, answer, incorrectOptions);
     }
-    public void shuffle()
+
+
+    @Override
+    public String toString()
     {
-        Random rnd = new Random();
-        for (int i = options.length - 1; i > 0; i--)
-        {
-            int index = rnd.nextInt(i+1);
-            if(i==correctIndex) correctIndex = index;
-            else if(index==correctIndex) correctIndex = i;
-            String a = options[index];
-            options[index] = options[i];
-            options[i] = a;
+        StringBuilder strBuilder = new StringBuilder();
+        Collections.shuffle(getOptionArray());
+
+        strBuilder.append(getQuestion() + '\n');
+        for (int i = 0; i < getOptionArray().size(); i++) {
+            strBuilder.append(Integer.toString(i + 1) + ". " + getOptionArray().get(i) + '\n');
+        }
+
+        return strBuilder.toString();
+    }
+
+    @Override
+    public boolean check(String guess)
+    {
+        if (guess.equals(getAnswer().toLowerCase())) {
+            return true;
+        } else {
+            // Trying to interpret as option number
+            try {
+                int optionNum = Integer.parseInt(guess) - 1;
+                if (getOptions()[optionNum] == getAnswer()) {
+                    return true;
+                } else {
+                    return false;
+                }
+
+            // Not a number, so incorrect option
+            } catch (NumberFormatException e) {
+                return false;
+            }
         }
     }
 }
