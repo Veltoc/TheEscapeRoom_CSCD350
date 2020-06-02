@@ -1,5 +1,6 @@
 package maze;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
@@ -8,6 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 import java.util.Scanner;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 
 import maze.Room.Direction;
 
@@ -147,7 +152,7 @@ public class Main {
             ps.close();
             questions.add(new TrueFalse(question, Boolean.parseBoolean(answer)));
             Collections.shuffle(questions, rnd);
-            System.out.println("True/False has been inserted!");
+            System.out.println("True/False question inserted!");
         }
         catch (Exception e)
         {
@@ -169,7 +174,7 @@ public class Main {
             ps.close();
             questions.add(new MultipleChoice(question, answer, incorrectOptions));
             Collections.shuffle(questions, rnd);
-            System.out.println("Multiple choice has been inserted!");
+            System.out.println("Multiple Choice question inserted!");
         }
         catch (Exception e)
         {
@@ -188,7 +193,7 @@ public class Main {
             ps.close();
             questions.add(new ShortAnswer(question, answer));
             Collections.shuffle(questions, rnd);
-            System.out.println("Short answer has been inserted!");
+            System.out.println("Short Answer question inserted!");
         }
         catch (Exception e)
         {
@@ -204,36 +209,32 @@ public class Main {
             // Prompting player
             System.out.println("\n" + maze.getDisplay(currentRoom));
             System.out.println("Enter your command. Entering 'help' will show a list of commands.");
+
             // Getting command
             while (true)
             {
                 System.out.print("> ");
                 String in = keyboard.nextLine().toLowerCase();
                 System.out.print("\n\n\n");
-                if (in.equals("help"))
-                {
+                if (in.equals("help")) {
                     printCommands();
                     continue;
                 }
-                else if (in.startsWith("q"))//quit
-                {
+                else if (in.startsWith("q")) {//quit
                     return true;
                 }
-                else if (in.equals("add question"))
-                {
+                else if (in.equals("add question")) {
                     addQuestion();
                     continue;
                 }
-                else if (in.startsWith("save"))
-                {
+
+                else if (in.startsWith("save")) {
                     String filename = getFilename("save", in);
-                    if (filename == null)
-                    {
+                    if (filename == null) {
                         System.out.println("Please enter a file name.");
                         continue;
                     }
-                    try
-                    {
+                    try {
                         FileOutputStream file = new FileOutputStream(filename);
                         ObjectOutputStream out = new ObjectOutputStream(file);
                         out.writeObject(maze);
@@ -241,21 +242,18 @@ public class Main {
                         file.close();
                         out.close();
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         System.out.println("Unable to save...");
                         continue;
                     }
                 }
-                else if (in.startsWith("load"))
-                {
+                else if (in.startsWith("load")) {
                     String filename = getFilename("save", in);
                     if (filename == null) {
                         System.out.println("Please enter a file name.");
                         continue;
                     }
-                    try
-                    {
+                    try {
                         FileInputStream file = new FileInputStream(filename);
                         ObjectInputStream inFile = new ObjectInputStream(file);
                         maze = (Maze) inFile.readObject();
@@ -263,80 +261,68 @@ public class Main {
                         file.close();
                         inFile.close();
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         System.out.println("Unable to load...");
                         continue;
                     }
-                    // Directions
+
+                // Directions
                 }
-                else if (in.startsWith("n") || in.equals("up"))
-                {
+                else if (in.startsWith("n") || in.equals("up")) {
                     moveToRoom(Direction.UP);
                 }
-                else if (in.startsWith("s") || in.equals("down"))
-                {
+                else if (in.startsWith("s") || in.equals("down")) {
                     moveToRoom(Direction.DOWN);
                 }
-                else if (in.startsWith("w") || in.equals("left"))
-                {
+                else if (in.startsWith("w") || in.equals("left")) {
                     moveToRoom(Direction.LEFT);
                 }
-                else if (in.startsWith("e") || in.equals("right"))
-                {
+                else if (in.startsWith("e") || in.equals("right")) {
                     moveToRoom(Direction.RIGHT);
                 }
-                else if (in.startsWith("/"))
-                {
-                    if (in.equals("/"))
-                    {
+                else if (in.startsWith("/")) {
+                    if (in.equals("/")) {
                         printCheatCommands();
                         continue;
                     }
-                    else if (in.startsWith("/unlock"))
-                    {
+                    else if (in.startsWith("/unlock")) {
                         Direction dir;
-                        if (in.endsWith("up"))
-                        {
+                        if (in.endsWith("up")) {
                             dir = Direction.UP;
                         }
-                        else if (in.endsWith("down"))
-                        {
+                        else if (in.endsWith("down")) {
                             dir = Direction.DOWN;
                         }
-                        else if (in.endsWith("left"))
-                        {
+                        else if (in.endsWith("left")) {
                             dir = Direction.LEFT;
                         }
-                        else if (in.endsWith("right"))
-                        {
+                        else if (in.endsWith("right")) {
                             dir = Direction.RIGHT;
                         }
-                        else
-                            {
+                        else {
                             System.out.println("Unknown direction. Please enter up, down, left, or right.");
                             continue;
                         }
                         currentRoom.openDoor(dir);
-                    } else if (in.startsWith("/escape"))
-                    {
+                    } else if (in.startsWith("/escape")) {
                         currentRoom = maze.getFinish();
                     }
                 }
-                else
-                {
+
+                else {
                     System.out.println("Unknown command. Please enter 'help' for a list of commands.");
                 }
                 break;
             }
+
             // Checking game state
-            if (maze.getFinish() == currentRoom)
-            {
+            if (maze.getFinish() == currentRoom) {
+                playSound("win");
                 System.out.println("You escaped! Congratulations!");
                 break;
             }
-            else if (!maze.isPathToFinish(currentRoom))
-            {
+            else if (!maze.isPathToFinish(currentRoom)) {
+                playSound("lose");
                 System.out.println("There is no escape...");
                 break;
             }
@@ -348,28 +334,29 @@ public class Main {
     {
         System.out.println(
                 "Enter the corresponding number to the Question you wish to add\n"
-                        + "1. True/False Question\n" // Implemented in askQuestion
-                        + "2. Multiple Choice Question\n" // Implemented in askQuestion
+                        + "1. True/False Question\n"
+                        + "2. Multiple Choice Question\n"
                         + "3. Short Answer Question\n"
         );
+
         String in = keyboard.nextLine().toLowerCase();
-        switch (in)
-        {
+        String question;
+        String answer;
+
+        switch (in) {
             case "1":
-                {
                 System.out.println("Enter the question:");
-                String question = keyboard.nextLine();
+                question = keyboard.nextLine();
                 System.out.println("Is it true or false?");
-                String answer = keyboard.nextLine();
+                answer = keyboard.nextLine();
                 insertTFQuestion(question, answer);
                 break;
-            }
+
             case "2":
-                {
                 System.out.println("Enter the question:");
-                String question = keyboard.nextLine();
+                question = keyboard.nextLine();
                 System.out.println("Enter the correct answer:");
-                String answer = keyboard.nextLine();
+                answer = keyboard.nextLine();
                 System.out.println("Enter incorrect answer one:");
                 String incorrect1 = keyboard.nextLine();
                 System.out.println("Enter incorrect answer two:");
@@ -378,16 +365,14 @@ public class Main {
                 String incorrect3 = keyboard.nextLine();
                 insertMCQuestion(question, answer, new String[]{incorrect1, incorrect2, incorrect3});
                 break;
-            }
+
             case "3":
-                {
                 System.out.println("Enter the question:");
-                String question = keyboard.nextLine();
+                question = keyboard.nextLine();
                 System.out.println("Enter the correct answer:");
-                String answer = keyboard.nextLine();
+                answer = keyboard.nextLine();
                 insertSAQuestion(question, answer);
                 break;
-            }
         }
     }
 
@@ -412,6 +397,7 @@ public class Main {
             //initQuestions();
             getDBQuestions();
         }
+
         // Asking question
         System.out.println(currentQuestion);
         String answer = "";
@@ -419,12 +405,14 @@ public class Main {
             System.out.print("? ");
             answer = keyboard.nextLine().toLowerCase();
         }
+
         if (!answer.equals("/fail")
                 && (answer.equals("/answer") || currentQuestion.check(answer))) {
+            playSound("correct question");
             System.out.println("\n\n\nCorrect! You may proceed.");
             return true;
-        } else
-            {
+        } else {
+            playSound("incorrect question");
             System.out.println("\n\n\nIncorrect! The door is now locked.");
             return false;
         }
@@ -465,7 +453,18 @@ public class Main {
         );
     }
 
-    //below methods are to allow for access for testing
+    private static void playSound(String sound)
+    {
+        try {
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File("sounds/" + sound + ".wav"));
+            Clip audioClip = AudioSystem.getClip();
+            audioClip.open(audioStream);
+            audioClip.start();
+        } catch (Exception e) {
+            System.err.println("Error trying to play sound " + sound + ".");
+        }
+    }
+
     public static Room getCurrentRoom()
     {
         return currentRoom;

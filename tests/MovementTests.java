@@ -62,7 +62,7 @@ public class MovementTests
     @Test
     public void test_WinState()
     {
-        InputStream fakeIn = new ByteArrayInputStream("right\n/answer\nright\n/answer\nright\n/answer\ndown\n/answer\ndown\n/answer\ndown\n/answer\nn".getBytes());
+        InputStream fakeIn = new ByteArrayInputStream("/escape\nn".getBytes());
         System.setIn(fakeIn);
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
